@@ -6,9 +6,13 @@ import AddClientModal from './AddClientModal';
 import EditClientModal from './EditClientModal';
 
 function ClientsPage({ auth, token }) {
+    // initialize navigation
     const navigate = useNavigate();
+    // state to hold clients data
     const [clients, setClients] = useState([]);
+    // state to hold selected client details
     const [selectedClient, setSelectedClient] = useState(null);
+    // state for new client form
     const [newClient, setNewClient] = useState({
         name: '',
         phone_number: '',
@@ -16,14 +20,21 @@ function ClientsPage({ auth, token }) {
         additional_comments: '',
         priority: '',
     });
+    // state to manage visibility of add client modal
     const [showModal, setShowModal] = useState(false);
+    // state to manage visibility of client detail modal
     const [showClientDetailModal, setShowClientDetailModal] = useState(false);
+    // state for search input
     const [searchTerm, setSearchTerm] = useState('');
+    // state to manage visibility of edit client modal
     const [showEditClientModal, setShowEditClientModal] = useState(false);
+    // state to hold client being edited
     const [editingClient, setEditingClient] = useState(null);
+    // state to track if user is dragging
     const [dragging, setDragging] = useState(false);
 
     useEffect(() => {
+        // redirect to login if not authenticated
         if (!auth) {
             navigate('/');
             return;
@@ -31,6 +42,7 @@ function ClientsPage({ auth, token }) {
 
         const fetchClients = async () => {
             try {
+                // fetch clients from api
                 const response = await fetch(`${process.env.REACT_APP_API_URL}/api/clients`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -46,6 +58,7 @@ function ClientsPage({ auth, token }) {
 
         const scrollContainer = document.querySelector('.scrollable-container');
         if (scrollContainer) {
+            // handle scrolling interactions
             let isDown = false;
             let startX;
             let scrollLeft;
@@ -95,6 +108,7 @@ function ClientsPage({ auth, token }) {
     }, [auth, navigate, token]);
 
     const handleCardClick = (e, client) => {
+        // prevent default behavior if dragging
         if (dragging) {
             e.preventDefault();
         } else {
@@ -103,41 +117,49 @@ function ClientsPage({ auth, token }) {
     };
 
     const toggleModal = () => {
+        // toggle add client modal visibility
         setShowModal(!showModal);
         document.body.classList.toggle('modal-open');
     };
 
     const openEditClientModal = (client) => {
+        // set client to be edited and open edit client modal
         setEditingClient({ ...client });
         setShowEditClientModal(true);
     };
 
     const closeEditClientModal = () => {
+        // close edit client modal and clear editing client state
         setShowEditClientModal(false);
         setEditingClient(null);
     };
 
     const openClientDetailModal = (client) => {
+        // set selected client and open client detail modal
         setSelectedClient(client);
         setShowClientDetailModal(true);
         document.body.classList.add('modal-open');
     };
 
     const closeClientDetailModal = () => {
+        // close client detail modal and clear selected client state
         setShowClientDetailModal(false);
         setSelectedClient(null);
         document.body.classList.remove('modal-open');
     };
 
     const handleSearchChange = (e) => {
+        // update search term state
         setSearchTerm(e.target.value.toLowerCase());
     };
 
     const handleDeleteClient = async (clientId) => {
+        // confirm client deletion
         const confirmDelete = window.confirm("Are you sure you want to delete this client? This action cannot be undone.");
         if (!confirmDelete) return;
 
         try {
+            // delete client
             await fetch(`${process.env.REACT_APP_API_URL}/api/clients/${clientId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -154,20 +176,24 @@ function ClientsPage({ auth, token }) {
     const handleAddClient = async (e) => {
         e.preventDefault();
 
+        // regex for phone number and priority validation
         const phoneRegex = /^\d{10}$/;
         const priorityRegex = /^[1-9]$|^10$/;
 
+        // validate phone number
         if (!phoneRegex.test(newClient.phone_number)) {
             alert('Phone number must be a 10-digit number.');
             return;
         }
 
+        // validate priority
         if (!priorityRegex.test(newClient.priority)) {
             alert('Priority must be a number between 1 and 10.');
             return;
         }
 
         try {
+            // add new client
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/clients`, {
                 method: 'POST',
                 headers: {
@@ -189,20 +215,24 @@ function ClientsPage({ auth, token }) {
     const handleUpdateClient = async (e) => {
         e.preventDefault();
 
+        // regex for phone number and priority validation
         const phoneRegex = /^\d{10}$/;
         const priorityRegex = /^[1-9]$|^10$/;
 
+        // validate phone number
         if (!phoneRegex.test(editingClient.phone_number)) {
             alert('Phone number must be a 10-digit number.');
             return;
         }
 
+        // validate priority
         if (!priorityRegex.test(editingClient.priority)) {
             alert('Priority must be a number between 1 and 10.');
             return;
         }
 
         try {
+            // update client details
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/clients/${editingClient.id}`, {
                 method: 'PUT',
                 headers: {
@@ -224,6 +254,7 @@ function ClientsPage({ auth, token }) {
     const handleSendTextMessage = async (phoneNumber) => {
         const message = "JetCorrect: Your plane's detailing is complete and ready at BJC!";
         try {
+            // send text message to client
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/send-text`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -239,6 +270,7 @@ function ClientsPage({ auth, token }) {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        // update new client form state
         setNewClient({
             ...newClient,
             [name]: value
@@ -248,6 +280,7 @@ function ClientsPage({ auth, token }) {
     return (
         <div className="main-content">
             {showModal && (
+                // add client modal
                 <AddClientModal
                     toggleModal={toggleModal}
                     handleAddClient={handleAddClient}
@@ -257,6 +290,7 @@ function ClientsPage({ auth, token }) {
             )}
 
             {showClientDetailModal && selectedClient && (
+                // client detail modal
                 <ClientDetailModal
                     client={selectedClient}
                     closeClientDetailModal={closeClientDetailModal}
@@ -267,6 +301,7 @@ function ClientsPage({ auth, token }) {
             )}
 
             {showEditClientModal && editingClient && (
+                // edit client modal
                 <EditClientModal
                     client={editingClient}
                     closeEditClientModal={closeEditClientModal}

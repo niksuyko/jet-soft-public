@@ -1,9 +1,9 @@
 import React from 'react';
 
 function EditClientModal({ client, closeEditClientModal, handleUpdateClient, setEditingClient }) {
-    // Prevent closing modal when clicking inside the modal container
+    // prevent closing modal when clicking inside the modal container
     const handleBackgroundClick = (e) => {
-        // Close modal only if clicking directly on the background, not on modal content
+        // close modal only if clicking directly on the background, not on modal content
         if (e.target.classList.contains('modal-background')) {
             closeEditClientModal();
         }
